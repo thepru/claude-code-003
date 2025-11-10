@@ -8,9 +8,9 @@ Ultra-simple CLI tool for filtering markdown files by tags. Filter markdown elem
 - **Write to file**: `tag#tagname -w filename.md` creates `filename--tagged--tagname.md`
 - **Smart filtering**:
   - Headers with tags include all content until the next same-level header (excluding differently-tagged content)
+  - Code blocks under tagged headers are included
   - List items with tags are included in their entirety
   - Paragraphs with tags are included in their entirety
-  - Code blocks are skipped (not filtered)
 - **Pure shell**: No dependencies, just bash/zsh and awk
 
 ## Installation
@@ -118,13 +118,13 @@ Note how:
 ## How It Works
 
 1. **Tag extraction**: The command `tag#foo` is parsed to extract `foo` as the tag
-2. **Element detection**: The awk script identifies markdown elements (headers, lists, paragraphs)
+2. **Element detection**: The awk script identifies markdown elements (headers, lists, paragraphs, code blocks)
 3. **Smart inclusion**:
    - Tagged headers include all content in their section (until next same-level header)
+   - Code blocks under tagged headers are included
    - Content with different tags under a tagged header is excluded
    - Tagged list items and paragraphs are included entirely
-   - Code blocks are skipped/ignored
-4. **Output**: Filtered content is printed to stdout
+4. **Output**: Filtered content is printed to stdout or written to file
 
 ## Limitations #test
 

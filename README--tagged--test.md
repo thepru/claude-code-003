@@ -1,9 +1,15 @@
 ### For Bash #test
 Add to your `~/.bashrc`:
 
+```bash
+source /path/to/markdown-tag-filter.sh
+```
 
 Then reload:
 
+```bash
+source ~/.bashrc
+```
 
 ## Limitations #test
 

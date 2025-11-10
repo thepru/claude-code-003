@@ -2,6 +2,9 @@
 
 To install the project, run the following commands:
 
+```bash
+npm install #important
+```
 
 This will install all dependencies needed.
 

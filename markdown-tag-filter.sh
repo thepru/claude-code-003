@@ -79,7 +79,7 @@ function tagmd() {
         para_has_tag = 0
     }
 
-    # Code blocks are skipped entirely
+    # Code blocks are included if in a tagged section
     /^```/ {
         flush_list()
         flush_para()
@@ -89,11 +89,19 @@ function tagmd() {
         } else {
             in_code_block = 1
         }
+
+        # If in tagged section, print code block markers
+        if (in_tagged_section) {
+            print $0
+        }
         next
     }
 
-    # Skip lines inside code blocks
+    # Code block content - include if in tagged section
     in_code_block {
+        if (in_tagged_section) {
+            print $0
+        }
         next
     }
 
@@ -183,11 +191,11 @@ function tagmd() {
         flush_list()
         flush_para()
     }
-    ' "$file" > "${output_file:-/dev/stdout}"
-
-    # If writing to file, show success message
-    if [[ $write_mode -eq 1 ]]; then
+    ' "$file" | if [[ $write_mode -eq 1 ]]; then
+        cat > "$output_file"
         echo "Filtered content written to: $output_file"
+    else
+        cat
     fi
 }
 
