@@ -18,30 +18,36 @@ source ~/.bashrc  # or source ~/.zshrc
 
 ## Basic Usage
 
-### Filter by tag
+### Filter by tag (print to stdout)
 
 ```bash
-cat#important example.md
+tag#important example.md
 ```
 
 Shows all markdown elements tagged with `#important`.
 
-### Save filtered output
+### Save filtered output to file
 
 ```bash
-cat#dev example.md > dev-docs.md
+tag#dev -w example.md
 ```
 
-### Multiple operations
+Creates `example--tagged--dev.md` with the filtered content.
+
+### Piping to other tools
 
 ```bash
-# Filter by one tag, then another
-cat#important docs.md > important.md
-cat#dev docs.md > dev.md
+# Filter and pipe to other commands
+tag#important docs.md | wc -l
+tag#important docs.md | grep "API"
+```
 
-# Combine with other tools
-cat#important docs.md | wc -l
-cat#important docs.md | grep "API"
+### Multiple filtering operations
+
+```bash
+# Create multiple filtered versions
+tag#important -w docs.md  # creates docs--tagged--important.md
+tag#dev -w docs.md         # creates docs--tagged--dev.md
 ```
 
 ## How It Works
@@ -77,7 +83,7 @@ Standard rate limits apply.
 - DELETE /api/users #admin
 ```
 
-Running `cat#important example.md` produces:
+Running `tag#important example.md` produces:
 
 ```markdown
 # API Documentation #important

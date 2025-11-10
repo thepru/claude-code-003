@@ -1,17 +1,37 @@
 #!/bin/bash
 # Markdown Tag Filter - Ultra-simple CLI tool for filtering markdown by tags
-# Usage: cat#tag filename.md
-# Example: cat#foo example.md > filtered.md
+# Usage: tag#foo filename.md
+# Usage: tag#foo -w filename.md (writes to filename--tagged--foo.md)
+# Example: tag#foo example.md
+# Example: tag#foo -w example.md
 
 # Main function that processes markdown files
-function catmd() {
+function tagmd() {
     local tag="$1"
-    local file="$2"
+    local write_mode=0
+    local file=""
+
+    shift  # Remove tag from arguments
+
+    # Parse arguments for -w flag
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -w)
+                write_mode=1
+                shift
+                ;;
+            *)
+                file="$1"
+                shift
+                ;;
+        esac
+    done
 
     # Check if we got a tag and filename
     if [[ -z "$tag" || -z "$file" ]]; then
-        echo "Usage: cat#<tag> <markdown-file>" >&2
-        echo "Example: cat#foo example.md" >&2
+        echo "Usage: tag#<tag> [-w] <markdown-file>" >&2
+        echo "Example: tag#foo example.md" >&2
+        echo "Example: tag#foo -w example.md  (writes to example--tagged--foo.md)" >&2
         return 1
     fi
 
@@ -21,14 +41,20 @@ function catmd() {
         return 1
     fi
 
+    # Determine output destination
+    local output_file=""
+    if [[ $write_mode -eq 1 ]]; then
+        # Generate output filename: basename--tagged--tagname.md
+        local basename="${file%.md}"
+        output_file="${basename}--tagged--${tag}.md"
+    fi
+
     # Process markdown file with awk
     awk -v tag="#$tag" '
     BEGIN {
         in_code_block = 0
         in_tagged_section = 0
         section_level = 0
-        code_buffer = ""
-        code_has_tag = 0
         list_buffer = ""
         list_has_tag = 0
         para_buffer = ""
@@ -53,45 +79,31 @@ function catmd() {
         para_has_tag = 0
     }
 
-    # Detect code blocks
+    # Code blocks are skipped entirely
     /^```/ {
         flush_list()
         flush_para()
 
         if (in_code_block) {
-            # Ending code block
-            code_buffer = code_buffer $0 "\n"
-            if (code_has_tag) {
-                printf "%s", code_buffer
-            }
-            code_buffer = ""
-            code_has_tag = 0
             in_code_block = 0
         } else {
-            # Starting code block
             in_code_block = 1
-            code_buffer = $0 "\n"
-            code_has_tag = 0
         }
         next
     }
 
-    # Inside code block
+    # Skip lines inside code blocks
     in_code_block {
-        code_buffer = code_buffer $0 "\n"
-        if (index($0, tag) > 0) {
-            code_has_tag = 1
-        }
         next
     }
 
     # Detect headers
-    /^#{1,6} / {
+    /^#+ / {
         flush_list()
         flush_para()
 
         # Get header level
-        match($0, /^#{1,6}/)
+        match($0, /^#+/)
         current_header_level = RLENGTH
 
         # Check if header has tag
@@ -171,17 +183,22 @@ function catmd() {
         flush_list()
         flush_para()
     }
-    ' "$file"
+    ' "$file" > "${output_file:-/dev/stdout}"
+
+    # If writing to file, show success message
+    if [[ $write_mode -eq 1 ]]; then
+        echo "Filtered content written to: $output_file"
+    fi
 }
 
 # Create dynamic command_not_found_handle for bash/zsh
-# This intercepts commands like "cat#foo" and routes them to catmd
+# This intercepts commands like "tag#foo" and routes them to tagmd
 command_not_found_handle() {
-    if [[ "$1" =~ ^cat#.+ ]]; then
-        local tag="${1#cat#}"
-        shift  # Remove the cat#tag from arguments
-        # Call catmd with tag and remaining arguments
-        catmd "$tag" "$@"
+    if [[ "$1" =~ ^tag#.+ ]]; then
+        local tag="${1#tag#}"
+        shift  # Remove the tag#tag from arguments
+        # Call tagmd with tag and remaining arguments
+        tagmd "$tag" "$@"
     else
         echo "bash: $1: command not found" >&2
         return 127

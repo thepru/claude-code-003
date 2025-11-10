@@ -1,21 +1,21 @@
 # Markdown Tag Filter
 
-Ultra-simple CLI tool for filtering markdown files by tags. Filter any markdown elements (headings, list items, paragraphs, code blocks) that contain specific tags.
+Ultra-simple CLI tool for filtering markdown files by tags. Filter markdown elements (headings, list items, paragraphs) that contain specific tags.
 
 ## Features
 
-- **Simple syntax**: `cat#tag filename.md`
+- **Simple syntax**: `tag#tagname filename.md`
+- **Write to file**: `tag#tagname -w filename.md` creates `filename--tagged--tagname.md`
 - **Smart filtering**:
-  - Headers with tags include all content until the next same-level header
-  - List items and paragraphs are included in their entirety if tagged
-  - Code blocks are included if they contain the tag
+  - Headers with tags include all content until the next same-level header (excluding differently-tagged content)
+  - List items with tags are included in their entirety
+  - Paragraphs with tags are included in their entirety
+  - Code blocks are skipped (not filtered)
 - **Pure shell**: No dependencies, just bash/zsh and awk
-- **Pipeable**: Redirect output to create filtered versions
 
 ## Installation
 
-### For Bash
-
+### For Bash #test
 Add to your `~/.bashrc`:
 
 ```bash
@@ -48,10 +48,10 @@ Simply copy the contents of `markdown-tag-filter.sh` and paste into your `~/.bas
 
 ## Usage
 
-### Basic filtering
+### Basic filtering (print to stdout)
 
 ```bash
-cat#important example.md
+tag#important example.md
 ```
 
 This will display all elements tagged with `#important`.
@@ -59,15 +59,18 @@ This will display all elements tagged with `#important`.
 ### Save to file
 
 ```bash
-cat#dev example.md > dev-only.md
+tag#dev -w example.md
 ```
 
-### Multiple tags
+Creates `example--tagged--dev.md` with filtered content.
 
-To filter by multiple tags, you can pipe the commands:
+### Piping to other tools
+
+You can pipe output to other commands:
 
 ```bash
-cat#important example.md | grep -v "#dev"
+tag#important example.md | grep "API"
+tag#important example.md | wc -l
 ```
 
 ## Examples
@@ -91,7 +94,7 @@ Run these commands:
 Basic usage instructions here.
 ```
 
-Running `cat#important example.md` outputs:
+Running `tag#important example.md` outputs:
 
 ```markdown
 # Setup Guide #important
@@ -114,15 +117,16 @@ Note how:
 
 ## How It Works
 
-1. **Tag extraction**: The function name `cat#foo` is parsed to extract `foo` as the tag
-2. **Element detection**: The awk script identifies markdown elements (headers, lists, paragraphs, code blocks)
+1. **Tag extraction**: The command `tag#foo` is parsed to extract `foo` as the tag
+2. **Element detection**: The awk script identifies markdown elements (headers, lists, paragraphs)
 3. **Smart inclusion**:
-   - Tagged headers include all content in their section
+   - Tagged headers include all content in their section (until next same-level header)
+   - Content with different tags under a tagged header is excluded
    - Tagged list items and paragraphs are included entirely
-   - Code blocks with tags are included
+   - Code blocks are skipped/ignored
 4. **Output**: Filtered content is printed to stdout
 
-## Limitations
+## Limitations #test
 
 - Tags must be in the format `#tagname` (no spaces in tag names)
 - Header section filtering stops at the next same-or-higher level header
