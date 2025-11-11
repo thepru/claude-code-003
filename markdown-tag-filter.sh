@@ -1,9 +1,9 @@
 #!/bin/bash
 # Markdown Tag Filter - Ultra-simple CLI tool for filtering markdown by tags
-# Usage: tag#foo filename.md
-# Usage: tag#foo -w filename.md (writes to filename--tagged--foo.md)
-# Example: tag#foo example.md
-# Example: tag#foo -w example.md
+# Usage: tag#<tagname> <file.md>
+# Usage: tag#<tagname> -w <file.md> (writes to file--tagged--tagname.md)
+# Example: tag#important docs.md
+# Example: tag#todo -w notes.md
 
 # Main function that processes markdown files
 function tagmd() {
@@ -30,8 +30,8 @@ function tagmd() {
     # Check if we got a tag and filename
     if [[ -z "$tag" || -z "$file" ]]; then
         echo "Usage: tag#<tag> [-w] <markdown-file>" >&2
-        echo "Example: tag#foo example.md" >&2
-        echo "Example: tag#foo -w example.md  (writes to example--tagged--foo.md)" >&2
+        echo "Example: tag#important docs.md" >&2
+        echo "Example: tag#todo -w notes.md  (writes to notes--tagged--todo.md)" >&2
         return 1
     fi
 
