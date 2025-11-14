@@ -2,7 +2,7 @@
 
 Ultra-simple CLI tool for filtering markdown files by tags. Filter markdown elements (headings, list items, paragraphs) that contain specific tags.
 
-## Features
+## Features #another-tag
 
 - **Simple syntax**: `tag#tagname filename.md`
 - **Write to file**: `tag#tagname -w filename.md` creates `filename--tagged--tagname.md`
@@ -63,6 +63,15 @@ tag#dev -w example.md
 ```
 
 Creates `example--tagged--dev.md` with filtered content.
+
+### Using kebab-case tags
+
+Tags can use hyphens for multi-word tags:
+
+```bash
+tag#work-in-progress docs.md
+tag#high-priority -w notes.md
+```
 
 ### Piping to other tools
 
@@ -128,7 +137,7 @@ Note how:
 
 ## Limitations #test
 
-- Tags must be in the format `#tagname` (no spaces in tag names)
+- Tags must be in the format `#tagname` or `#kebab-case` (alphanumeric, underscores, and hyphens allowed)
 - Header section filtering stops at the next same-or-higher level header
 - Multi-line elements are treated as single units
 

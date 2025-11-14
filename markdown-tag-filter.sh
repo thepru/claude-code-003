@@ -120,16 +120,37 @@ function tagmd() {
             section_level = current_header_level
             print $0
         } else {
-            # Check if this ends a tagged section
-            if (in_tagged_section && current_header_level <= section_level) {
-                in_tagged_section = 0
+            # Check if this ends or pauses a tagged section
+            if (in_tagged_section) {
+                # Same-or-higher level header ends the section
+                if (current_header_level <= section_level) {
+                    in_tagged_section = 0
+                } else {
+                    # Sub-header with different tag - check if it has ANY tag
+                    if (match($0, /#[a-zA-Z0-9_-]+/)) {
+                        # Sub-header has a different tag, end section
+                        in_tagged_section = 0
+                    }
+                }
             }
         }
         next
     }
 
     # Handle content under tagged headers
+    # Only include content that either has the target tag OR has no tags
     in_tagged_section {
+        # Check if line has the target tag
+        if (index($0, tag) > 0) {
+            print $0
+            next
+        }
+        # Check if line has ANY tag (including kebab-case: #[a-zA-Z0-9_-]+)
+        if (match($0, /#[a-zA-Z0-9_-]+/)) {
+            # Has a different tag, skip it
+            next
+        }
+        # No tags, include it as part of section
         print $0
         next
     }
